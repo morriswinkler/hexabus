@@ -89,7 +89,7 @@ const (
 	DTYPE_66BYTES = 0x08
 	// max byte 65 bytes DATA TYPE name is a typo since this type is 
 	// used by the statemachine upload only, and that is 65 bytes 
-	BYTES16_PACKET_MAX_BUFFER_LENGTH_ = 65
+	BYTES66_PACKET_MAX_BUFFER_LENGTH_ = 65
 	
 	/* Error codes */
 

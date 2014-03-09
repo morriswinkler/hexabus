@@ -28,6 +28,12 @@ var data_types = map[byte]payload{
 	DTYPE_TIMESTAMP: payload{
 		Timestamp{899992},
 	},
+	DTYPE_16BYTES: payload{
+		make_byte_slice(16),
+	},
+	DTYPE_66BYTES: payload{
+		make_byte_slice(65),
+	},
 }
 
 var error = []byte{ERR_SUCESS, ERR_UNKNOWNEID, ERR_WRITEREADONLY, ERR_CRCFAILED, ERR_DATATYPE, ERR_INVALID_VALUE}
@@ -50,9 +56,9 @@ func Test_ErrorPacket(t *testing.T) {
 		p0_error.Decode(packet)
 
 		if p0_error != p_error {
-			t.Errorf("ErrorPacket did not match while testing: \n Encode: %+v \n Decode: %+v \n", p_error, p0_error)
+			t.Errorf("ErrorPacket with error Type did not match while testing: \n Encode: %+v \n Decode: %+v \n", p_error, p0_error)
 		} else {
-			t.Log("ErrorPacket test passed")
+			t.Logf("ErrorPacket with Err type %x passed test", v)
 		}
 	}
 }
@@ -65,8 +71,7 @@ func Test_InfoPacket(t *testing.T) {
 		p0_info := InfoPacket{}
 		p0_info.Decode(packet)
 		
-		t.Log(k)
-		if k != 9 || k != 8 {
+		if k != DTYPE_16BYTES && k != DTYPE_66BYTES  {
 			if p_info != p0_info {
 				t.Errorf("InfoPacket with datatype %d did not match while testing: \n Encode: %+v \n Decode: %+v \n", p0_info.Dtype, p_info, p0_info)
 			} else {

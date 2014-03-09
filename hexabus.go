@@ -8,7 +8,7 @@ func addHeader(packet []byte) {
 	packet[0], packet[1], packet[2], packet[3] = HEADER0, HEADER1, HEADER2, HEADER3
 }
 
-func addData(packet []byte, data interface{}) []byte { 	
+func encData(packet []byte, data interface{}) []byte { 	
 	// set datatype
 	switch data := data.(type) {
 	case bool:
@@ -47,6 +47,8 @@ func addData(packet []byte, data interface{}) []byte {
 		packet[10] = DTYPE_FLOAT
 		packet = append(packet, buf.Bytes()...)
 	case string:
+		// TODO: check if you can send smaller string length then 128 bytes 
+		// might be the same case as in 16BYTES and 66BYTES
 		if len(data) > STRING_PACKET_MAX_BUFFER_LENGTH { 
 			panic(fmt.Errorf("max string length 127 exeeded for string: %s", data))
 		} else {
@@ -65,7 +67,8 @@ func addData(packet []byte, data interface{}) []byte {
 		packet[10] = DTYPE_TIMESTAMP
 		packet = append(packet, buf.Bytes()...)
 	case []byte:
-		// TODO: check if padding is the intended behavior
+		// there are only 16, 66 bytes long byte packets, they where both added to 
+		// serve a uniq purpos, bytes with variable length is planned in the next protokoll version or so
 		if len(data) == 16 {
 			packet[10] = DTYPE_16BYTES
 			packet = append(packet, data...)
@@ -84,7 +87,7 @@ func addData(packet []byte, data interface{}) []byte {
 	
 }
 
-// calculate crc16 kermit variant
+// calculate crc16 variant
 // this code was translated from a php snippet found on http://www.lammertbies.nl/forum/viewtopic.php?t=1253
 func crc16(packet []byte) uint16 {
 	var crc uint16
@@ -99,6 +102,7 @@ func crc16(packet []byte) uint16 {
                 }
         }
 	// in the original Kermit implementation the two crc bytes are swaped
+	// i commented that since this is not kermit
 	// hexabus uses the same CRC as contiki os , type ???
         //lb := (crc & 0xff00) >> 8
         //hb := (crc & 0x00ff) << 8
@@ -106,6 +110,7 @@ func crc16(packet []byte) uint16 {
 	return crc
 } 
 
+// add checksum 
 func addCRC(packet []byte) []byte {
 	crc := crc16(packet)
 	packet = append(packet,uint8(crc>>8), uint8(crc&0xff))
@@ -117,6 +122,8 @@ type Timestamp struct {
 	TotalSeconds uint32
 }
 
+// decodes the payload from a timestamp packet into a Timestamp structure
+// takes as argument a Packet.Data interface{}
 func (t *Timestamp) Decode(data interface{}) {
         buf := bytes.NewBuffer(data.([]byte))
         err := binary.Read(buf, binary.BigEndian, t)
@@ -125,7 +132,7 @@ func (t *Timestamp) Decode(data interface{}) {
         }
 }
 
-// struct to hold DTYPE_DATETIME data
+// struct to hold DTYPE_DATETIME 
 type DateTime struct {
         Hours uint8
         Minutes uint8
@@ -136,6 +143,8 @@ type DateTime struct {
         DayOfWeek uint8
 }
 
+// decodes the payload from a datetime packet into a DateTime structure
+// takes as argument a Packet.Data interface{}
 func (d *DateTime) Decode(data interface{}) {
         buf := bytes.NewBuffer(data.([]byte))
         err := binary.Read(buf, binary.BigEndian, d)
@@ -182,7 +191,7 @@ func (p *InfoPacket) Encode() []byte {
 	packet[5] = p.Flags
 	packet[6], packet[7], packet[8], packet[9] = uint8(p.Eid>>24), uint8(p.Eid>>16), uint8(p.Eid>>8), uint8(p.Eid&0xff)
 	packet[10] = p.Dtype
-	packet = addData(packet, p.Data)
+	packet = encData(packet, p.Data)
 	packet = addCRC(packet)     
 	return packet 
 }
@@ -194,19 +203,6 @@ func (p *InfoPacket) Decode(packet []byte) {
 	p.Data = packet[11:len(packet)-2]
 }
 
-// remove that !!!
-func EncodeInfoPacket( flags byte, eid uint32, data interface{}) (p []byte) {
-	packet := make([]byte, 11, 141)                                                
-	addHeader(packet)
-        packet[4] = PTYPE_INFO
-        packet[5] = flags
-        packet[6], packet[7], packet[8], packet[9] = uint8(eid>>24), uint8(eid>>16), uint8(eid>>8), uint8(eid&0xff)
-	fmt.Printf("EID bits: %b, %b, %b, %b\n", packet[6], packet[7], packet[8], packet[9])
-	packet = addData(packet, data)                                                
-        packet = addCRC(packet)                                                         
-        return packet
-}
-	
 type QueryPacket struct {
 	// 4 bytes header
 	// 1 byte packet type
@@ -244,7 +240,7 @@ func (p *WritePacket) Encode() []byte {
 	packet[4] = PTYPE_WRITE
 	packet[5] = p.Flags
 	packet[6], packet[7], packet[8], packet[9] = uint8(p.Eid>>24), uint8(p.Eid>>16), uint8(p.Eid>>8), uint8(p.Eid&0xff)
-	packet = addData(packet, p.Data)                                                
+	packet = encData(packet, p.Data)                                                
 	packet = addCRC(packet)     
 	return packet 
 }
