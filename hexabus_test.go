@@ -17,11 +17,11 @@ var data_types = map[byte]payload{
 		uint32(32434353),
 	},
 	DTYPE_DATETIME: payload{
-		DateTime{17,2,15,6,3,2014,4},
+		DateTime{17, 2, 15, 6, 3, 2014, 4},
 	},
 	DTYPE_FLOAT: payload{
 		float32(10.102930),
-	}, 
+	},
 	DTYPE_128STRING: payload{
 		"this is a hexabus packet test",
 	},
@@ -43,15 +43,15 @@ func make_byte_slice(size int) []byte {
 	for i := 0; i < size; i++ {
 		byte_slice[i] = byte(i)
 	}
-    return byte_slice
+	return byte_slice
 }
 
 func Test_ErrorPacket(t *testing.T) {
 
 	for _, v := range error {
-		p_error := ErrorPacket{FLAG_NONE,v}
+		p_error := ErrorPacket{FLAG_NONE, v}
 		packet := p_error.Encode()
-		
+
 		p0_error := ErrorPacket{}
 		p0_error.Decode(packet)
 
@@ -64,14 +64,14 @@ func Test_ErrorPacket(t *testing.T) {
 }
 
 func Test_InfoPacket(t *testing.T) {
-	for k, v := range data_types{
-		p_info := InfoPacket{FLAG_NONE,10,k, v.data}
+	for k, v := range data_types {
+		p_info := InfoPacket{FLAG_NONE, 10, k, v.data}
 		packet := p_info.Encode()
-		
+
 		p0_info := InfoPacket{}
 		p0_info.Decode(packet)
-		
-		if k != DTYPE_16BYTES && k != DTYPE_66BYTES  {
+
+		if k != DTYPE_16BYTES && k != DTYPE_66BYTES {
 			if p_info != p0_info {
 				t.Errorf("InfoPacket with datatype %d did not match while testing: \n Encode: %+v \n Decode: %+v \n", p0_info.Dtype, p_info, p0_info)
 			} else {

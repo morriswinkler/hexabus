@@ -8,7 +8,7 @@ func addHeader(packet []byte) {
 	packet[0], packet[1], packet[2], packet[3] = HEADER0, HEADER1, HEADER2, HEADER3
 }
 
-func encData(packet []byte, data interface{}) []byte { 	
+func encData(packet []byte, data interface{}) []byte {
 	// set datatype
 	switch data := data.(type) {
 	case bool:
@@ -47,9 +47,9 @@ func encData(packet []byte, data interface{}) []byte {
 		packet[10] = DTYPE_FLOAT
 		packet = append(packet, buf.Bytes()...)
 	case string:
-		// TODO: check if you can send smaller string length then 128 bytes 
+		// TODO: check if you can send smaller string length then 128 bytes
 		// might be the same case as in 16BYTES and 66BYTES
-		if len(data) > STRING_PACKET_MAX_BUFFER_LENGTH { 
+		if len(data) > STRING_PACKET_MAX_BUFFER_LENGTH {
 			panic(fmt.Errorf("max string length 127 exeeded for string: %s", data))
 		} else {
 			// TODO: check if 0 termination in string is right that way
@@ -67,7 +67,7 @@ func encData(packet []byte, data interface{}) []byte {
 		packet[10] = DTYPE_TIMESTAMP
 		packet = append(packet, buf.Bytes()...)
 	case []byte:
-		// there are only 16, 66 bytes long byte packets, they where both added to 
+		// there are only 16, 66 bytes long byte packets, they where both added to
 		// serve a uniq purpos, bytes with variable length is planned in the next protokoll version or so
 		if len(data) == 16 {
 			packet[10] = DTYPE_16BYTES
@@ -82,38 +82,38 @@ func encData(packet []byte, data interface{}) []byte {
 		packet[10] = DTYPE_UNDEFINED
 		panic(fmt.Errorf("unsupported payload type: %T", data))
 	}
-	
+
 	return packet
-	
+
 }
 
 // calculate crc16 variant
 // this code was translated from a php snippet found on http://www.lammertbies.nl/forum/viewtopic.php?t=1253
 func crc16(packet []byte) uint16 {
 	var crc uint16
-        for _, v := range packet {
-                crc = crc ^ uint16(v)
-                for y := 0; y < 8; y++ {
-                        if (crc & 0x001) == 0x0001 {
-                                crc = (crc >> 1) ^ 0x8408
-                        } else {
-                                crc = crc >> 1
-                        }
-                }
-        }
+	for _, v := range packet {
+		crc = crc ^ uint16(v)
+		for y := 0; y < 8; y++ {
+			if (crc & 0x001) == 0x0001 {
+				crc = (crc >> 1) ^ 0x8408
+			} else {
+				crc = crc >> 1
+			}
+		}
+	}
 	// in the original Kermit implementation the two crc bytes are swaped
 	// i commented that since this is not kermit
 	// hexabus uses the same CRC as contiki os , type ???
-        //lb := (crc & 0xff00) >> 8
-        //hb := (crc & 0x00ff) << 8
-        //crc = hb | lb
+	//lb := (crc & 0xff00) >> 8
+	//hb := (crc & 0x00ff) << 8
+	//crc = hb | lb
 	return crc
-} 
+}
 
-// add checksum 
+// add checksum
 func addCRC(packet []byte) []byte {
 	crc := crc16(packet)
-	packet = append(packet,uint8(crc>>8), uint8(crc&0xff))
+	packet = append(packet, uint8(crc>>8), uint8(crc&0xff))
 	return packet
 }
 
@@ -125,45 +125,45 @@ type Timestamp struct {
 // decodes the payload from a timestamp packet into a Timestamp structure
 // takes as argument a Packet.Data interface{}
 func (t *Timestamp) Decode(data interface{}) {
-        buf := bytes.NewBuffer(data.([]byte))
-        err := binary.Read(buf, binary.BigEndian, t)
-        if err != nil {
-                panic(fmt.Errorf("binary.Write failed:", err))
-        }
+	buf := bytes.NewBuffer(data.([]byte))
+	err := binary.Read(buf, binary.BigEndian, t)
+	if err != nil {
+		panic(fmt.Errorf("binary.Write failed:", err))
+	}
 }
 
-// struct to hold DTYPE_DATETIME 
+// struct to hold DTYPE_DATETIME
 type DateTime struct {
-        Hours uint8
-        Minutes uint8
-        Seconds uint8
-        Day uint8
-        Month uint8
-        Year uint16
-        DayOfWeek uint8
+	Hours     uint8
+	Minutes   uint8
+	Seconds   uint8
+	Day       uint8
+	Month     uint8
+	Year      uint16
+	DayOfWeek uint8
 }
 
 // decodes the payload from a datetime packet into a DateTime structure
 // takes as argument a Packet.Data interface{}
 func (d *DateTime) Decode(data interface{}) {
-        buf := bytes.NewBuffer(data.([]byte))
-        err := binary.Read(buf, binary.BigEndian, d)
-        if err != nil {
-                panic(fmt.Errorf("binary.Write failed:", err))
-        }
-}                
+	buf := bytes.NewBuffer(data.([]byte))
+	err := binary.Read(buf, binary.BigEndian, d)
+	if err != nil {
+		panic(fmt.Errorf("binary.Write failed:", err))
+	}
+}
 
 type ErrorPacket struct {
 	// 4 bytes header
 	// 1 byte packet type
-	Flags byte	 // 1 byte flags 
-	Error byte       // 1 byte error code
+	Flags byte // 1 byte flags
+	Error byte // 1 byte error code
 }
 
 func (p *ErrorPacket) Encode() []byte {
 	packet := make([]byte, 7)
 	addHeader(packet)
-	packet[4] = PTYPE_ERROR 
+	packet[4] = PTYPE_ERROR
 	packet[5] = p.Flags
 	packet[6] = p.Error
 	packet = addCRC(packet)
@@ -178,10 +178,10 @@ func (p *ErrorPacket) Decode(packet []byte) {
 type InfoPacket struct {
 	// 4 bytes header
 	// 1 byte packet type
-	Flags byte	  // 1 byteflags 
-	Eid uint32  // 4 bytes endpoint id
-	Dtype byte	  // 1 byte data type
-	Data interface{}   // ... bytes payload, size depending on datatype
+	Flags byte        // 1 byteflags
+	Eid   uint32      // 4 bytes endpoint id
+	Dtype byte        // 1 byte data type
+	Data  interface{} // ... bytes payload, size depending on datatype
 }
 
 func (p *InfoPacket) Encode() []byte {
@@ -192,22 +192,22 @@ func (p *InfoPacket) Encode() []byte {
 	packet[6], packet[7], packet[8], packet[9] = uint8(p.Eid>>24), uint8(p.Eid>>16), uint8(p.Eid>>8), uint8(p.Eid&0xff)
 	packet[10] = p.Dtype
 	packet = encData(packet, p.Data)
-	packet = addCRC(packet)     
-	return packet 
+	packet = addCRC(packet)
+	return packet
 }
 
 func (p *InfoPacket) Decode(packet []byte) {
 	p.Flags = packet[5]
 	p.Eid = uint32(uint8(packet[6])>>24 + uint8(packet[7])>>16 + uint8(packet[8])>>8 + uint8(packet[9])&0xff)
 	p.Dtype = packet[10]
-	p.Data = packet[11:len(packet)-2]
+	p.Data = packet[11 : len(packet)-2]
 }
 
 type QueryPacket struct {
 	// 4 bytes header
 	// 1 byte packet type
-	Flags byte	 // flags 
-	Eid uint32       // endpoint id
+	Flags byte   // flags
+	Eid   uint32 // endpoint id
 }
 
 func (p *QueryPacket) Encode() []byte {
@@ -216,11 +216,11 @@ func (p *QueryPacket) Encode() []byte {
 	packet[4] = PTYPE_QUERY
 	packet[5] = p.Flags
 	packet[6], packet[7], packet[8], packet[9] = uint8(p.Eid>>24), uint8(p.Eid>>16), uint8(p.Eid>>8), uint8(p.Eid&0xff)
-	packet = addCRC(packet)     
-	return packet 
+	packet = addCRC(packet)
+	return packet
 }
 
-func (p  *QueryPacket) Decode(packet []byte) {
+func (p *QueryPacket) Decode(packet []byte) {
 	p.Flags = packet[5]
 	p.Eid = uint32(uint8(packet[6])>>24 + uint8(packet[7])>>16 + uint8(packet[8])>>8 + uint8(packet[9])&0xff)
 }
@@ -228,11 +228,11 @@ func (p  *QueryPacket) Decode(packet []byte) {
 type WritePacket struct {
 	// 4 bytes header
 	// 1 byte packet type
-	Flags byte       // flags 
-	Eid uint32       // endpoint id
-	Dtype byte	 // data type
-	Data interface{} // payload, size depending on datatype
-}     
+	Flags byte        // flags
+	Eid   uint32      // endpoint id
+	Dtype byte        // data type
+	Data  interface{} // payload, size depending on datatype
+}
 
 func (p *WritePacket) Encode() []byte {
 	packet := make([]byte, 11)
@@ -240,15 +240,15 @@ func (p *WritePacket) Encode() []byte {
 	packet[4] = PTYPE_WRITE
 	packet[5] = p.Flags
 	packet[6], packet[7], packet[8], packet[9] = uint8(p.Eid>>24), uint8(p.Eid>>16), uint8(p.Eid>>8), uint8(p.Eid&0xff)
-	packet = encData(packet, p.Data)                                                
-	packet = addCRC(packet)     
-	return packet 
+	packet = encData(packet, p.Data)
+	packet = addCRC(packet)
+	return packet
 }
 
 func (p *WritePacket) Decode(packet []byte) {
 	p.Flags = packet[5]
 	p.Eid = uint32(uint8(packet[6])>>24 + uint8(packet[7])>>16 + uint8(packet[8])>>8 + uint8(packet[9])&0xff)
 	p.Dtype = packet[10]
-	p.Data = packet[11:len(packet)-2]
+	p.Data = packet[11 : len(packet)-2]
 
 }
