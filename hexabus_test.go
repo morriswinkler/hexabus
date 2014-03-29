@@ -1,6 +1,7 @@
 package hexabus
 
 import "testing"
+import "bytes"
 
 type payload struct {
 	data interface{}
@@ -72,11 +73,18 @@ func Test_InfoPacket(t *testing.T) {
 		p0_info.Decode(packet)
 
 		if k != DTYPE_16BYTES && k != DTYPE_66BYTES {
-			if p_info != p0_info {
+			if  p_info != p0_info {
 				t.Errorf("InfoPacket with datatype %d did not match while testing: \n Encode: %+v \n Decode: %+v \n", p0_info.Dtype, p_info, p0_info)
 			} else {
-				t.Log("InfoPackte test passed")
+				t.Logf("InfoPacket with Dtype %d passed test", k)
+			}
+		} else if k == DTYPE_16BYTES || k == DTYPE_66BYTES {
+			if ( bytes.Equal(p_info.Data.([]byte), p0_info.Data.([]byte)) == false) {
+				t.Errorf("InfoPacket with datatype %d did not match while testing: \n Encode: %+v \n Decode: %+v \n", p0_info.Dtype, p_info, p0_info)
+			} else {
+				t.Logf("InfoPacket with Dtype %d passed test", k)
 			}
 		}
 	}
 }
+

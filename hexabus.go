@@ -8,8 +8,8 @@ func addHeader(packet []byte) {
 	packet[0], packet[1], packet[2], packet[3] = HEADER0, HEADER1, HEADER2, HEADER3
 }
 
+// set datatype and encode payload in bytes
 func encData(packet []byte, data interface{}) []byte {
-	// set datatype
 	switch data := data.(type) {
 	case bool:
 		packet[10] = DTYPE_BOOL
@@ -87,6 +87,63 @@ func encData(packet []byte, data interface{}) []byte {
 
 }
 
+func decData(data []byte, dtype byte) (ret_data interface{}) {
+	switch dtype {
+	case DTYPE_BOOL:
+		if data[0] == 0x01 {
+			ret_data = true
+		} else if data[0] == 0x00 {
+			ret_data = false
+		} else {
+			panic(fmt.Errorf("data type bool cant be: %T", data))
+		}
+	case DTYPE_UINT8:
+		ret_data = uint8(data[0])
+	case DTYPE_UINT32:
+		var v uint32
+		buf := bytes.NewBuffer(data)
+		err := binary.Read(buf, binary.BigEndian, &v)
+		if err != nil {
+			panic(fmt.Errorf("binary.Read failed:", err))
+		}
+		ret_data = v
+	case DTYPE_DATETIME:
+		var v DateTime
+		buf := bytes.NewBuffer(data)
+		err := binary.Read(buf, binary.BigEndian, &v)
+		if err != nil {
+			panic(fmt.Errorf("binary.Read failed:", err))
+		}
+		ret_data = v
+	case DTYPE_FLOAT:
+		var v float32
+		buf := bytes.NewBuffer(data)
+		err := binary.Read(buf, binary.BigEndian, &v)
+		if err != nil {
+			panic(fmt.Errorf("binary.Read failed:", err))
+		}
+		ret_data = v
+	case DTYPE_128STRING:
+		ret_data = string(data[0:len(data)-1])
+	case DTYPE_TIMESTAMP:
+		var v Timestamp
+		buf := bytes.NewBuffer(data)
+		err := binary.Read(buf, binary.BigEndian, &v)
+		if err != nil {
+			panic(fmt.Errorf("binary.Read failed:", err))
+		}
+		ret_data = v
+	case DTYPE_16BYTES:
+		ret_data = data
+	case DTYPE_66BYTES:
+		ret_data = data
+	default:
+		panic(fmt.Errorf("unknown hexabus data type: %x", dtype))
+	}
+
+	return 
+}  
+
 // calculate crc16 variant
 // this code was translated from a php snippet found on http://www.lammertbies.nl/forum/viewtopic.php?t=1253
 func crc16(packet []byte) uint16 {
@@ -115,6 +172,17 @@ func addCRC(packet []byte) []byte {
 	crc := crc16(packet)
 	packet = append(packet, uint8(crc>>8), uint8(crc&0xff))
 	return packet
+}
+
+func checkCRC(packet []byte) ( result bool) {
+	crc_c := crc16(packet[:len(packet)-2])
+	crc_r := binary.BigEndian.Uint16(packet[len(packet)-2:])
+	if crc_c == crc_r {
+		return true
+	} else {
+		panic(fmt.Errorf("checksum %d and %d do not match", crc_c, crc_r))  
+		return false
+	}
 }
 
 // struct to hold DTYPE_TIMESTAMP
@@ -171,8 +239,10 @@ func (p *ErrorPacket) Encode() []byte {
 }
 
 func (p *ErrorPacket) Decode(packet []byte) {
-	p.Flags = packet[5]
-	p.Error = packet[6]
+	if checkCRC(packet) {
+		p.Flags = packet[5]
+		p.Error = packet[6]
+	}
 }
 
 type InfoPacket struct {
@@ -200,7 +270,7 @@ func (p *InfoPacket) Decode(packet []byte) {
 	p.Flags = packet[5]
 	p.Eid = uint32(uint8(packet[6])>>24 + uint8(packet[7])>>16 + uint8(packet[8])>>8 + uint8(packet[9])&0xff)
 	p.Dtype = packet[10]
-	p.Data = packet[11 : len(packet)-2]
+	p.Data = decData(packet[11 : len(packet)-2], packet[10])
 }
 
 type QueryPacket struct {
