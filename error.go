@@ -14,7 +14,7 @@ func (e Error ) Error() string {
 	if e.err != nil {
 		return fmt.Sprintf("Error:%d %s %s ", e.id, e.msg, e.err)
 	} else {
-			return fmt.Sprintf("Error:%d %s", e.id, e.msg)
+		return fmt.Sprintf("Error:%d %s", e.id, e.msg)
 	}
 }
 

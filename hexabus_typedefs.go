@@ -111,4 +111,10 @@ const (
 
 	// A value was encountered that cannot be interpreted
 	ERR_INVALID_VALUE = 0x05
+
+	/* Networking */
+	
+	// package transmit timeout
+	NET_TIMEOUT = 3
+	
 )
