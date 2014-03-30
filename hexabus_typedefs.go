@@ -114,6 +114,9 @@ const (
 
 	/* Networking */
 	
+	// hexabus default port
+	PORT = 61616
+
 	// package transmit timeout
 	NET_TIMEOUT = 3
 	

@@ -1,5 +1,6 @@
 package hexabus
 
+
 type ErrorPacket struct {
 	// 4 bytes header
 	// 1 byte packet type
@@ -74,7 +75,7 @@ type QueryPacket struct {
 }
 
 func (p *QueryPacket) Encode() []byte {
-	packet := make([]byte, 12)
+	packet := make([]byte, 10)
 	addHeader(packet)
 	packet[4] = PTYPE_QUERY
 	packet[5] = p.Flags

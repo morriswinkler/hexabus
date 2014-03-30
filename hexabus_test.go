@@ -57,7 +57,7 @@ func Test_ErrorPacket(t *testing.T) {
 		p0_error.Decode(packet)
 
 		if p0_error != p_error {
-			t.Errorf("ErrorPacket with error Type did not match while testing: \n Encode: %+v \n Decode: %+v \n", p_error, p0_error)
+			t.Errorf("ErrorPacket with error Type %x did not match while testing: \n Encode: %+v \n Decode: %+v \n", v, p_error, p0_error)
 		} else {
 			t.Logf("ErrorPacket with Err type %x passed test", v)
 			t.Logf("Send    :%+v", p_error)
@@ -105,3 +105,27 @@ func Test_InfoPacket(t *testing.T) {
 	}
 }
 
+var eids = []uint32{0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16}
+
+func Test_QueryPacket(t *testing.T) {
+
+	
+	for _, v := range eids {
+		p_query := QueryPacket{FLAG_NONE, v}
+		packet := p_query.Encode()
+
+		p0_query := QueryPacket{}
+		p0_query.Decode(packet)
+
+		if p0_query != p_query {
+			t.Errorf("QueryPacket with EID %d did not match while testing: \n Encode: %+v \n Decode: %+v \n", v, p_query, p0_query)
+		} else {
+			t.Logf("QuerryPacket with EID type %d passed test", v)
+			t.Logf("Send    :%+v", p_query)
+			t.Logf("Receive :%+v", p0_query)
+			t.Logf("RAW     :%x", packet)
+			t.Logf("")
+			
+		}
+	}
+}
