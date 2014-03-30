@@ -41,7 +41,7 @@ const (
 
 	// Hexabus EpQuery Packet
 	// Request endpoint metadata
-	PTYPE_EPQUERY = 0x09
+	PTYPE_EPQUERY = 0x0a
 
 	/* Flags */
 

@@ -5,6 +5,7 @@ import (
 	"net"
 	"time"
 	"regexp"
+	"fmt"
 )
 
 
@@ -64,12 +65,29 @@ func (p *WritePacket) Send(address string) (error) {
 		return  err
 	}
         
-	_, err = conn.Read(readbuf)
+	n, err := conn.Read(readbuf)
+	
         if err != nil {
-                return  err
+		if opErr, ok := err.(net.Error); ok && !opErr.Timeout() {
+		return  err
+		}
         }
 	
+	if n > 0 {
+		err = checkHeader(readbuf[:n])
+		if err != nil {
+			return err
+		}
+		ptype, err := PacketType(readbuf[:n])
+		if err != nil {
+			return err
+		}
+		if ptype == PTYPE_ERROR {
+			ep := ErrorPacket{} 
+			ep.Decode(readbuf[:n])
+			return Error{id:ERR_ERRPACKET_ID, msg:ERR_ERRPACKET_MSG + fmt.Sprintf("%d",ep.Error)}
+		}
+	}
 	return nil
-	
 }
 

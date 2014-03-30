@@ -11,6 +11,13 @@ func addHeader(packet []byte) {
 	packet[0], packet[1], packet[2], packet[3] = HEADER0, HEADER1, HEADER2, HEADER3
 }
 
+func checkHeader(packet []byte) (error) {
+	if packet[0] == HEADER0 && packet[1] == HEADER1 && packet[2] == HEADER2 && packet[3] == HEADER3 {
+		return nil
+	}
+	return Error{id:ERR_WRONGHEADER_ID, msg:ERR_WRONGHEADER_MSG}
+}
+
 // set datatype and encode payload in bytes
 func encData(packet []byte, data interface{}) ([]byte, error) {
 	switch data := data.(type) {
@@ -156,3 +163,26 @@ func decData(data []byte, dtype byte) (interface{}, error) {
 
 	return ret_data, nil
 }  
+
+func PacketType(packet []byte) (ptype byte, err error) {
+	switch packet[4] { 
+	case PTYPE_ERROR:
+		ptype = PTYPE_ERROR
+	case PTYPE_INFO:
+		ptype = PTYPE_INFO
+	case PTYPE_QUERY:
+		ptype = PTYPE_QUERY
+	case PTYPE_WRITE:
+		ptype = PTYPE_WRITE
+	case PTYPE_EPINFO:
+		ptype = PTYPE_EPINFO
+	case PTYPE_EPQUERY:
+		ptype = PTYPE_EPQUERY
+	default:
+		return 0xff, Error{id:ERR_UNKNOWNPTYPE_ID, msg:ERR_UNKNOWNPTYPE_MSG}
+	}
+	
+	return ptype, nil
+}
+
+

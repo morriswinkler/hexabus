@@ -31,4 +31,9 @@ const (
 	ERR_HXBDTYPE_ID, ERR_HXBDTYPE_MSG = 26, "unknown hexabus data type:"
 	ERR_CRCFAILED_ID, ERR_CRCFAILED_MSG = 27, "checksum mismatch:"
 
+	// network errors
+	ERR_WRONGHEADER_ID, ERR_WRONGHEADER_MSG = 40, "wrong packet header:"
+	ERR_UNKNOWNPTYPE_ID, ERR_UNKNOWNPTYPE_MSG = 41, "unknown packet type:"
+	ERR_ERRPACKET_ID, ERR_ERRPACKET_MSG = 42, "received error packet with value:"
+
 )
