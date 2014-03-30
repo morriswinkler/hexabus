@@ -8,15 +8,16 @@ import (
 )
 
 
-func Send(packet []byte, address string) ([]byte, error) {
+func (p *QueryPacket) Send(address string) ([]byte, error) {
+	
+	packet := p.Encode()
 	
 	// check if port is set otherwhise append default hexabus port
 	var validPort = regexp.MustCompile(`:[0-9]{1,5}$`)
 	if !validPort.MatchString(address) {
-		address += ":" + string(PORT)
+		address += ":" + PORT
 	}
-	
-	readbuf := make([]byte, 10, 100)
+	readbuf := make([]byte, 152)
         conn, err := net.DialTimeout("udp6", address, time.Duration(NET_TIMEOUT)*time.Second)
         if err != nil {
                 return nil, err
@@ -27,11 +28,48 @@ func Send(packet []byte, address string) ([]byte, error) {
                 return nil, err
         }
 
-        _, err = conn.Read(readbuf)
+        n, err := conn.Read(readbuf)
         if err != nil {
                 return nil, err
         }
 
-        return readbuf, nil
+        return readbuf[:n], nil
+}
+
+func (p *WritePacket) Send(address string) (error) {
+	
+	packet, err := p.Encode()
+	if err != nil {
+		return err
+	}
+
+	// check if port is set otherwhise append default hexabus port
+	var validPort = regexp.MustCompile(`:[0-9]{1,5}$`)
+	if !validPort.MatchString(address) {
+		address += ":" + PORT
+	}
+	readbuf := make([]byte, 152)
+        conn, err := net.DialTimeout("udp6", address, time.Duration(NET_TIMEOUT)*time.Second)
+        if err != nil {
+                return err
+        }
+
+        _, err = conn.Write(packet)
+        if err != nil {
+                return err
+        }
+
+	err = conn.SetReadDeadline(time.Now().Add(time.Duration(NET_TIMEOUT * time.Second)))
+	if err != nil {
+		return  err
+	}
+        
+	_, err = conn.Read(readbuf)
+        if err != nil {
+                return  err
+        }
+	
+	return nil
+	
 }
 
