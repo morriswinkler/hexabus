@@ -135,7 +135,7 @@ func decData(data []byte, dtype byte) (interface{}, error) {
 		}
 		ret_data = v
 	case DTYPE_128STRING:
-		if len(data) > 127 {
+		if len(data) > 128 {
 			return nil, Error{id:ERR_MAXSTRBUFF_ID, msg:ERR_MAXSTRBUFF_MSG + string(data)}
 		}
 		ret_data = string(data[0:len(data)-1])
