@@ -37,7 +37,7 @@ var data_types = map[byte]payload{
 	},
 }
 
-var error = []byte{ERR_SUCESS, ERR_UNKNOWNEID, ERR_WRITEREADONLY, ERR_CRCFAILED, ERR_DATATYPE, ERR_INVALID_VALUE}
+var error_t = []byte{ERR_SUCCESS, ERR_UNKNOWNEID, ERR_WRITEREADONLY, ERR_CRCFAILED, ERR_DATATYPE, ERR_INVALID_VALUE}
 
 func make_byte_slice(size int) []byte {
 	byte_slice := make([]byte, size)
@@ -49,7 +49,7 @@ func make_byte_slice(size int) []byte {
 
 func Test_ErrorPacket(t *testing.T) {
 
-	for _, v := range error {
+	for _, v := range error_t {
 		p_error := ErrorPacket{FLAG_NONE, v}
 		packet := p_error.Encode()
 
@@ -60,6 +60,11 @@ func Test_ErrorPacket(t *testing.T) {
 			t.Errorf("ErrorPacket with error Type did not match while testing: \n Encode: %+v \n Decode: %+v \n", p_error, p0_error)
 		} else {
 			t.Logf("ErrorPacket with Err type %x passed test", v)
+			t.Logf("Send    :%+v", p_error)
+			t.Logf("Receive :%+v", p0_error)
+			t.Logf("RAW     :%x", packet)
+			t.Logf("")
+			
 		}
 	}
 }
@@ -67,22 +72,34 @@ func Test_ErrorPacket(t *testing.T) {
 func Test_InfoPacket(t *testing.T) {
 	for k, v := range data_types {
 		p_info := InfoPacket{FLAG_NONE, 10, k, v.data}
-		packet := p_info.Encode()
+		packet, err := p_info.Encode()
+		if err != nil {
+			t.Errorf("%s", err)
+		}
 
 		p0_info := InfoPacket{}
 		p0_info.Decode(packet)
 
 		if k != DTYPE_16BYTES && k != DTYPE_66BYTES {
 			if  p_info != p0_info {
-				t.Errorf("InfoPacket with datatype %d did not match while testing: \n Encode: %+v \n Decode: %+v \n", p0_info.Dtype, p_info, p0_info)
+				t.Errorf("InfoPacket with Data type %d did not match while testing: \n Encode: %+v \n Decode: %+v \n", p0_info.Dtype, p_info, p0_info)
 			} else {
-				t.Logf("InfoPacket with Dtype %d passed test", k)
+				t.Logf("InfoPacket with Data type %d passed test", k)
+				t.Logf("Send    :%+v", p_info)
+				t.Logf("Receive :%+v", p0_info)
+				t.Logf("RAW     :%x", packet)
+				t.Logf("")
 			}
 		} else if k == DTYPE_16BYTES || k == DTYPE_66BYTES {
 			if ( bytes.Equal(p_info.Data.([]byte), p0_info.Data.([]byte)) == false) {
-				t.Errorf("InfoPacket with datatype %d did not match while testing: \n Encode: %+v \n Decode: %+v \n", p0_info.Dtype, p_info, p0_info)
+				t.Errorf("InfoPacket with Data type %d did not match while testing: \n Encode: %+v \n Decode: %+v \n", p0_info.Dtype, p_info, p0_info)
 			} else {
-				t.Logf("InfoPacket with Dtype %d passed test", k)
+				t.Logf("InfoPacket with Data type %d passed test", k)
+				t.Logf("Send    :%+v", p_info)
+				t.Logf("Receive :%+v", p0_info)
+				t.Logf("RAW     :%x", packet)
+				t.Logf("")
+
 			}
 		}
 	}

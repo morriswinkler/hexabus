@@ -94,7 +94,7 @@ const (
 	/* Error codes */
 
 	// reserved: No error
-	ERR_SUCESS = 0x00
+	ERR_SUCCESS = 0x00
 
 	// A request for an endpoint which does not exist on the device was received
 	ERR_UNKNOWNEID = 0x01
