@@ -25,11 +25,12 @@ const (
 	ERR_BINWRITE_ID, ERR_BINWRITE_MSG = 20, "binary.Write failed:"
 	ERR_BINREAD_ID, ERR_BINREAD_MSG = 21, "binary.READ failed:"
 	ERR_MAXSTRBUFF_ID, ERR_MAXSTRBUFF_MSG = 22, "strings can't exeed 127 bytes:" 
-	ERR_BYTESIZE_ID, ERR_BYTESIZE_MSG = 23, "16, 65 bytes length are allowed:"
-	ERR_PAYLOAD_ID, ERR_PAYLOAD_MSG = 24, "unsuported payload type:"
-	ERR_BOOLTYPE_ID, ERR_BOOLTYPE_MSG = 25, "bool can only be 0x00 or 0x01:"
-	ERR_HXBDTYPE_ID, ERR_HXBDTYPE_MSG = 26, "unknown hexabus data type:"
-	ERR_CRCFAILED_ID, ERR_CRCFAILED_MSG = 27, "checksum mismatch:"
+	ERR_STRNOTERM_ID, ERR_STRNOTERM_MSG = 23, "string is not 0 terminated:"
+	ERR_BYTESIZE_ID, ERR_BYTESIZE_MSG = 24, "16, 65 bytes length are allowed:"
+	ERR_PAYLOAD_ID, ERR_PAYLOAD_MSG = 25, "unsuported payload type:"
+	ERR_BOOLTYPE_ID, ERR_BOOLTYPE_MSG = 26, "bool can only be 0x00 or 0x01:"
+	ERR_HXBDTYPE_ID, ERR_HXBDTYPE_MSG = 27, "unknown hexabus data type:"
+	ERR_CRCFAILED_ID, ERR_CRCFAILED_MSG = 28, "checksum mismatch:"
 
 	// network errors
 	ERR_WRONGHEADER_ID, ERR_WRONGHEADER_MSG = 40, "wrong packet header:"

@@ -6,11 +6,12 @@ import  (
 )
 
 
-
+// add packet header
 func addHeader(packet []byte) {
 	packet[0], packet[1], packet[2], packet[3] = HEADER0, HEADER1, HEADER2, HEADER3
 }
 
+// check if a received packet header is valid
 func checkHeader(packet []byte) (error) {
 	if packet[0] == HEADER0 && packet[1] == HEADER1 && packet[2] == HEADER2 && packet[3] == HEADER3 {
 		return nil
@@ -97,6 +98,7 @@ func encData(packet []byte, data interface{}) ([]byte, error) {
 
 }
 
+// decode received Data payload
 func decData(data []byte, dtype byte) (interface{}, error) {
 	var ret_data interface{}
 	switch dtype {
@@ -135,10 +137,15 @@ func decData(data []byte, dtype byte) (interface{}, error) {
 		}
 		ret_data = v
 	case DTYPE_128STRING:
-		if len(data) > 128 {
+		if len(data) != 128 {
 			return nil, Error{id:ERR_MAXSTRBUFF_ID, msg:ERR_MAXSTRBUFF_MSG + string(data)}
 		}
-		ret_data = string(data[0:len(data)-1])
+		end := bytes.IndexByte(data, 0x00)
+		if end != -1 {
+			ret_data = string(data[0:end])
+		} else {
+			return nil, Error{id:ERR_STRNOTERM_ID, msg:ERR_STRNOTERM_MSG}
+		}
 	case DTYPE_TIMESTAMP:
 		var v Timestamp
 		buf := bytes.NewBuffer(data)
@@ -184,5 +191,4 @@ func PacketType(packet []byte) (ptype byte, err error) {
 	
 	return ptype, nil
 }
-
 

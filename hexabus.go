@@ -11,6 +11,7 @@ type ErrorPacket struct {
 	Error byte // 1 byte error code
 }
 
+// encoder for Error Packet
 func (p *ErrorPacket) Encode() []byte {
 	packet := make([]byte, 7)
 	addHeader(packet)
@@ -21,6 +22,7 @@ func (p *ErrorPacket) Encode() []byte {
 	return packet
 }
 
+// decoder for Error Packet
 func (p *ErrorPacket) Decode(packet []byte) (err error) {
 	err = checkHeader(packet)
 	if err != nil {
@@ -35,6 +37,8 @@ func (p *ErrorPacket) Decode(packet []byte) (err error) {
 	return nil
 }
 
+// Hexabus Info Packet
+// Info Packets are send after a Query Packet or Broadcasted every n seconds
 type InfoPacket struct {
 	// 4 bytes header
 	// 1 byte packet type
@@ -44,6 +48,7 @@ type InfoPacket struct {
 	Data  interface{} // ... bytes payload, size depending on datatype
 }
 
+// encoder for Info Packet
 func (p *InfoPacket) Encode() (packet []byte, err error) {
 	packet = make([]byte, 11)
 	addHeader(packet)
@@ -59,6 +64,7 @@ func (p *InfoPacket) Encode() (packet []byte, err error) {
 	return packet, nil
 }
 
+// decoder for Info Packet
 func (p *InfoPacket) Decode(packet []byte) (err error) {
 	err = checkHeader(packet)
 	if err != nil {
@@ -78,6 +84,8 @@ func (p *InfoPacket) Decode(packet []byte) (err error) {
 	return nil
 }
 
+// Hexabus Query Packet
+// used to query endpoints to return an Info Packet
 type QueryPacket struct {
 	// 4 bytes header
 	// 1 byte packet type
@@ -85,6 +93,7 @@ type QueryPacket struct {
 	Eid   uint32 // endpoint id
 }
 
+// encoder for Query Packet
 func (p *QueryPacket) Encode() []byte {
 	packet := make([]byte, 10)
 	addHeader(packet)
@@ -95,6 +104,7 @@ func (p *QueryPacket) Encode() []byte {
 	return packet
 }
 
+// decoder for Query Packet
 func (p *QueryPacket) Decode(packet []byte) (err error) {
 	err = checkHeader(packet)
 	if err != nil {
@@ -109,6 +119,9 @@ func (p *QueryPacket) Decode(packet []byte) (err error) {
 	return nil
 }
 
+// Hexabus Write Packet
+// used to set a writeable entpoint id to a certain value, there is no response for that o
+// other than an Error Packet on fail
 type WritePacket struct {
 	// 4 bytes header
 	// 1 byte packet type
@@ -118,6 +131,7 @@ type WritePacket struct {
 	Data  interface{} // payload, size depending on datatype
 }
 
+// encoder for Write Packet
 func (p *WritePacket) Encode() (packet []byte, err error) {
 	packet = make([]byte, 11)
 	addHeader(packet)
@@ -132,6 +146,7 @@ func (p *WritePacket) Encode() (packet []byte, err error) {
 	return packet, nil
 }
 
+// decoder for Write Packet
 func (p *WritePacket) Decode(packet []byte) (err error){
 	err = checkHeader(packet)
 	if err != nil {
@@ -151,6 +166,9 @@ func (p *WritePacket) Decode(packet []byte) (err error){
 	return nil
 }
 
+// Hexabus Endpoint Info Package
+// this is a response packet to Endpoint Query and holds the EID Dtype and a 
+// message that describes that endpoint in Data
 type EpInfoPacket struct {
 	// 4 bytes header
 	// 1 byte packet type
@@ -160,6 +178,7 @@ type EpInfoPacket struct {
 	Data  interface{} // ... bytes payload, size depending on datatype
 }
 
+// encoder for Endpoint Info Packet
 func (p *EpInfoPacket) Encode() (packet []byte, err error) {
 	packet = make([]byte, 11)
 	addHeader(packet)
@@ -175,6 +194,7 @@ func (p *EpInfoPacket) Encode() (packet []byte, err error) {
 	return packet, nil
 }
 
+// decoder for Endpoint Info Packet
 func (p *EpInfoPacket) Decode(packet []byte) (err error) {
 	err = checkHeader(packet)
 	if err != nil {
@@ -200,6 +220,8 @@ func (p *EpInfoPacket) Decode(packet []byte) (err error) {
 	return nil
 }
 
+// Hexabus Endpoint Query Packet
+// used to query endpoints for a data ytpe and a short description
 type EpQueryPacket struct {
 	// 4 bytes header
 	// 1 byte packet type
@@ -207,6 +229,7 @@ type EpQueryPacket struct {
 	Eid   uint32 // endpoint id
 }
 
+// encoder for Endpoint Query Packet
 func (p *EpQueryPacket) Encode() []byte {
 	packet := make([]byte, 10)
 	addHeader(packet)
@@ -217,6 +240,7 @@ func (p *EpQueryPacket) Encode() []byte {
 	return packet
 }
 
+// decoder for Endpoint Query Packet
 func (p *EpQueryPacket) Decode(packet []byte) (err error) {
 	err = checkHeader(packet)
 	if err != nil {

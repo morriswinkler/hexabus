@@ -8,6 +8,15 @@ import (
 	"fmt"
 )
 
+// structure to hold all EID's of a hexabus device and its capabilities
+type EIDs struct {
+	Eid      uint32  // Eid 
+	Desc     string  // description
+	Dtype    byte    // data type
+	Writable bool    // writeable
+}
+
+
 
 func (p *QueryPacket) Send(address string) ([]byte, error) {
 	
