@@ -67,6 +67,10 @@ func encData(packet []byte, data interface{}) ([]byte, error) {
 			packet[10] = DTYPE_128STRING
 			packet = append(packet, data...)
 			packet = append(packet, byte(0))
+			
+			for len(packet[11:]) < 128 {
+				packet = append(packet, byte(0))
+			}
 		}
 		// TIMESTAMP: intended for type syscall.Sysinfo_t.Uptime not working
 	case Timestamp:

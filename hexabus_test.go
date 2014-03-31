@@ -78,11 +78,13 @@ func Test_InfoPacket(t *testing.T) {
 		}
 
 		p0_info := InfoPacket{}
-		p0_info.Decode(packet)
-
+		err = p0_info.Decode(packet)
+		if err != nil {
+			t.Errorf("%s", err)
+		}
 		if k != DTYPE_16BYTES && k != DTYPE_66BYTES {
 			if  p_info != p0_info {
-				t.Errorf("InfoPacket with Data type %d did not match while testing: \n Encode: %+v \n Decode: %+v \n", p0_info.Dtype, p_info, p0_info)
+				t.Errorf("InfoPacket with Data type %d did not match while testing: \n Encode: %+v \n Decode: %+v \n Data Length: %d \n RAW: %x \n", p0_info.Dtype, p_info, p0_info, len(packet[11:len(packet)-2]), packet)
 			} else {
 				t.Logf("InfoPacket with Data type %d passed test", k)
 				t.Logf("Send    :%+v", p_info)
