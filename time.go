@@ -1,10 +1,9 @@
 package hexabus
 
-import  (
+import (
 	"bytes"
 	"encoding/binary"
 )
-
 
 // struct to hold DTYPE_TIMESTAMP
 type Timestamp struct {
@@ -17,7 +16,7 @@ func (t *Timestamp) Decode(data interface{}) (err error) {
 	buf := bytes.NewBuffer(data.([]byte))
 	err = binary.Read(buf, binary.BigEndian, t)
 	if err != nil {
-		return Error{id:ERR_BINREAD_ID, msg:ERR_BINREAD_MSG, err:err}
+		return Error{id: ERR_BINREAD_ID, msg: ERR_BINREAD_MSG, err: err}
 	}
 	return nil
 }
@@ -39,7 +38,7 @@ func (d *DateTime) Decode(data interface{}) (err error) {
 	buf := bytes.NewBuffer(data.([]byte))
 	err = binary.Read(buf, binary.BigEndian, d)
 	if err != nil {
-		return Error{id:ERR_BINREAD_ID, msg:ERR_BINREAD_MSG, err:err}
+		return Error{id: ERR_BINREAD_ID, msg: ERR_BINREAD_MSG, err: err}
 	}
 	return nil
 }

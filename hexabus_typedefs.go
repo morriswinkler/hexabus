@@ -3,7 +3,7 @@ package hexabus
 // These constants are used inside Hexabus packets.
 // They describe various packet types, data types and error responses.
 // As well as the four header bytes, Hexabus bool type representation and
-// paket flags. 
+// paket flags.
 const (
 	/* Header */
 

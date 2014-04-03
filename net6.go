@@ -36,7 +36,7 @@ func QueryEids(address string, eid_qty uint16) (map[uint16]EID, error) {
 
 	// build eid_mask to check what EID's are available
 	for _, descriptor := range eid_descriptors {
-		pq := QueryPacket{0, uint32(descriptor)}
+		pq := QueryPacket{FLAG_NONE, uint32(descriptor)}
 		result, err := pq.Send(address)
 		if err != nil {
 			return nil, err
@@ -70,7 +70,6 @@ func QueryEids(address string, eid_qty uint16) (map[uint16]EID, error) {
 			if err != nil {
 				return nil, err
 			}
-
 			eid_map[uint16(eid)] = EID{uint32(eid), pei.Dtype, pei.Data.(string), false}
 		}
 	}
