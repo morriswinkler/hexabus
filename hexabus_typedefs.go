@@ -1,6 +1,6 @@
 package hexabus
 
-// These constants are used inside Hexabus packets.
+// Constants used inside Hexabus packets.
 // They describe various packet types, data types and error responses.
 // As well as the four header bytes, Hexabus bool type representation and
 // paket flags.
@@ -96,21 +96,21 @@ const (
 	/* Error codes */
 
 	// reserved: No error
-	ERR_SUCCESS = 0x00
+	HXB_ERR_SUCCESS = 0x00
 
 	// A request for an endpoint which does not exist on the device was received
-	ERR_UNKNOWNEID = 0x01
+	HXB_ERR_PACKETUNKNOWNEID = 0x01
 
 	// WRITE was received for a readonly endpoint
-	ERR_WRITEREADONLY = 0x02
+	HXB_ERR_WRITEREADONLY = 0x02
 
 	// A packet failed the CRC check
 	// TODO How can we find out what information was lost?
-	ERR_CRCFAILED = 0x03
+	HXB_ERR_CRCFAILED = 0x03
 
 	// A packet with a datatype that does not fit the endpoint was received
-	ERR_DATATYPE = 0x04
+	HXB_ERR_DATATYPE = 0x04
 
 	// A value was encountered that cannot be interpreted
-	ERR_INVALID_VALUE = 0x05
+	HXB_ERR_INVALID_VALUE = 0x05
 )

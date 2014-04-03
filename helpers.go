@@ -5,17 +5,17 @@ import (
 	"encoding/binary"
 )
 
-// add packet header
+// add Hexabus packet header
 func addHeader(packet []byte) {
 	packet[0], packet[1], packet[2], packet[3] = HEADER0, HEADER1, HEADER2, HEADER3
 }
 
-// check if a received packet header is valid
+// check if a received packet contains a valid Hexabus header
 func checkHeader(packet []byte) error {
 	if packet[0] == HEADER0 && packet[1] == HEADER1 && packet[2] == HEADER2 && packet[3] == HEADER3 {
 		return nil
 	}
-	return Error{id: ERR_WRONGHEADER_ID, msg: ERR_WRONGHEADER_MSG}
+	return Error(0xb0)
 }
 
 // set datatype and encode payload in bytes
@@ -35,7 +35,7 @@ func encData(packet []byte, data interface{}) ([]byte, error) {
 		buf := new(bytes.Buffer)
 		err := binary.Write(buf, binary.BigEndian, data)
 		if err != nil {
-			return nil, Error{id: ERR_BINWRITE_ID, msg: ERR_BINWRITE_MSG, err: err}
+			return nil, err
 		}
 		packet[10] = DTYPE_UINT32
 		packet = append(packet, buf.Bytes()...)
@@ -44,7 +44,7 @@ func encData(packet []byte, data interface{}) ([]byte, error) {
 		buf := new(bytes.Buffer)
 		err := binary.Write(buf, binary.BigEndian, data)
 		if err != nil {
-			return nil, Error{id: ERR_BINWRITE_ID, msg: ERR_BINWRITE_MSG, err: err}
+			return nil, err
 		}
 		packet[10] = DTYPE_DATETIME
 		packet = append(packet, buf.Bytes()...)
@@ -52,7 +52,7 @@ func encData(packet []byte, data interface{}) ([]byte, error) {
 		buf := new(bytes.Buffer)
 		err := binary.Write(buf, binary.BigEndian, data)
 		if err != nil {
-			return nil, Error{id: ERR_BINWRITE_ID, msg: ERR_BINWRITE_MSG, err: err}
+			return nil, err
 		}
 		packet[10] = DTYPE_FLOAT
 		packet = append(packet, buf.Bytes()...)
@@ -60,7 +60,7 @@ func encData(packet []byte, data interface{}) ([]byte, error) {
 		// TODO: check if you can send smaller string length then 128 bytes
 		// might be the same case as in 16BYTES and 66BYTES
 		if len(data) > STRING_PACKET_MAX_BUFFER_LENGTH {
-			return nil, Error{id: ERR_MAXSTRBUFF_ID, msg: ERR_MAXSTRBUFF_MSG + data}
+			return nil, Error(0xa0)
 		} else {
 			// TODO: check if 0 termination in string is right that way
 			packet[10] = DTYPE_128STRING
@@ -76,7 +76,7 @@ func encData(packet []byte, data interface{}) ([]byte, error) {
 		buf := new(bytes.Buffer)
 		err := binary.Write(buf, binary.BigEndian, data)
 		if err != nil {
-			return nil, Error{id: ERR_BINWRITE_ID, msg: ERR_BINWRITE_MSG, err: err}
+			return nil, err
 		}
 		packet[10] = DTYPE_TIMESTAMP
 		packet = append(packet, buf.Bytes()...)
@@ -90,11 +90,11 @@ func encData(packet []byte, data interface{}) ([]byte, error) {
 			packet[10] = DTYPE_66BYTES
 			packet = append(packet, data...)
 		} else {
-			return nil, Error{id: ERR_BYTESIZE_ID, msg: ERR_BYTESIZE_MSG + string(len(data))}
+			return nil, Error(0xa2)
 		}
 	default:
 		packet[10] = DTYPE_UNDEFINED
-		return nil, Error{id: ERR_PAYLOAD_ID, msg: ERR_PAYLOAD_MSG}
+		return nil, Error(0xa3)
 	}
 
 	return packet, nil
@@ -111,7 +111,7 @@ func decData(data []byte, dtype byte) (interface{}, error) {
 		} else if data[0] == 0x00 {
 			ret_data = false
 		} else {
-			return nil, Error{id: ERR_BOOLTYPE_ID, msg: ERR_BOOLTYPE_MSG}
+			return nil, Error(0xa4)
 		}
 	case DTYPE_UINT8:
 		ret_data = uint8(data[0])
@@ -120,7 +120,7 @@ func decData(data []byte, dtype byte) (interface{}, error) {
 		buf := bytes.NewBuffer(data)
 		err := binary.Read(buf, binary.BigEndian, &v)
 		if err != nil {
-			return nil, Error{id: ERR_BINREAD_ID, msg: ERR_BINREAD_MSG, err: err}
+			return nil, err
 		}
 		ret_data = v
 	case DTYPE_DATETIME:
@@ -128,7 +128,7 @@ func decData(data []byte, dtype byte) (interface{}, error) {
 		buf := bytes.NewBuffer(data)
 		err := binary.Read(buf, binary.BigEndian, &v)
 		if err != nil {
-			return nil, Error{id: ERR_BINREAD_ID, msg: ERR_BINREAD_MSG, err: err}
+			return nil, err
 		}
 		ret_data = v
 	case DTYPE_FLOAT:
@@ -136,39 +136,39 @@ func decData(data []byte, dtype byte) (interface{}, error) {
 		buf := bytes.NewBuffer(data)
 		err := binary.Read(buf, binary.BigEndian, &v)
 		if err != nil {
-			return nil, Error{id: ERR_BINREAD_ID, msg: ERR_BINREAD_MSG, err: err}
+			return nil, err
 		}
 		ret_data = v
 	case DTYPE_128STRING:
 		if len(data) != 128 {
-			return nil, Error{id: ERR_MAXSTRBUFF_ID, msg: ERR_MAXSTRBUFF_MSG + string(data)}
+			return nil, Error(0xa0)
 		}
 		end := bytes.IndexByte(data, 0x00)
 		if end != -1 {
 			ret_data = string(data[0:end])
 		} else {
-			return nil, Error{id: ERR_STRNOTERM_ID, msg: ERR_STRNOTERM_MSG}
+			return nil, Error(0xa1)
 		}
 	case DTYPE_TIMESTAMP:
 		var v Timestamp
 		buf := bytes.NewBuffer(data)
 		err := binary.Read(buf, binary.BigEndian, &v)
 		if err != nil {
-			return nil, Error{id: ERR_BINREAD_ID, msg: ERR_BINREAD_MSG, err: err}
+			return nil, err
 		}
 		ret_data = v
 	case DTYPE_16BYTES:
 		if len(data) != 16 {
-			return nil, Error{id: ERR_BYTESIZE_ID, msg: ERR_BYTESIZE_MSG}
+			return nil, Error(0xa2)
 		}
 		ret_data = data
 	case DTYPE_66BYTES:
 		if len(data) != 65 {
-			return nil, Error{id: ERR_BYTESIZE_ID, msg: ERR_BYTESIZE_MSG}
+			return nil, Error(0xa2)
 		}
 		ret_data = data
 	default:
-		return nil, Error{id: ERR_HXBDTYPE_ID, msg: ERR_HXBDTYPE_MSG}
+		return nil, Error(0xa3)
 	}
 
 	return ret_data, nil
@@ -189,7 +189,7 @@ func PacketType(packet []byte) (ptype byte, err error) {
 	case PTYPE_EPQUERY:
 		ptype = PTYPE_EPQUERY
 	default:
-		return 0xff, Error{id: ERR_UNKNOWNPTYPE_ID, msg: ERR_UNKNOWNPTYPE_MSG}
+		return 0xff, Error(0xb1)
 	}
 
 	return ptype, nil

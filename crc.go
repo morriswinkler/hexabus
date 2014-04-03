@@ -41,6 +41,6 @@ func checkCRC(packet []byte) (err error) {
 	if crc_c == crc_r {
 		return nil
 	} else {
-		return Error{id: ERR_CRCFAILED_ID, msg: ERR_CRCFAILED_MSG}
+		return Error(0xa5)
 	}
 }

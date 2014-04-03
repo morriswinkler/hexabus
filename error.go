@@ -1,40 +1,58 @@
 package hexabus
 
-import "fmt"
+import "strconv"
 
-// Error type structure.
-type Error struct {
-	id  int    // error id
-	msg string // error message
-	err error  // additional error message
-}
+// Error type structure to hold err.id. err.msg and optional err.err.
+type Error int
 
 // Error returns an error type.
-// All Errors are passed with an ID and optional an err type from
+// All Errors are passed with ID and MSG and optional an err type from
 // other packages.
 func (e Error) Error() string {
-	if e.err != nil {
-		return fmt.Sprintf("Error:%d %s %s ", e.id, e.msg, e.err)
-	} else {
-		return fmt.Sprintf("Error:%d %s", e.id, e.msg)
+	str := error_message[e]
+	if str == "" {
+		// Please report a bug if this happens
+		return "Hexabus error #" + strconv.Itoa(int(e))
 	}
+
+	return str
 }
 
-// Internal error message.
+var error_message = map[Error]string{
+	// Hexanus packet errors
+	HXB_ERR_SUCCESS:          "hexabus packet error success",
+	HXB_ERR_PACKETUNKNOWNEID: "hexabus packet endpoint does not exist",
+	HXB_ERR_WRITEREADONLY:    "hexabus packet write on read only eid",
+	HXB_ERR_CRCFAILED:        "hexabus packet crc failed",
+	HXB_ERR_DATATYPE:         "hexabus packet data type doesn't fit endpoint",
+	HXB_ERR_INVALID_VALUE:    "hexabus packet value can not be interpreted",
+
+	// internal errors
+	ERR_STRBUFF:   "strings must be 127 bytes",
+	ERR_STRNOTERM: "string is not 0 terminated",
+	ERR_BYTESIZE:  "only bytes with 16 or 65 bit length are allowed",
+	ERR_HXBDTYPE:  "unsuported hexbus data type",
+	ERR_BOOLTYPE:  "bool can only be 0x00 or 0x01",
+	ERR_CRCFAILED: "checksum mismatch",
+
+	// internal network errors
+	ERR_WRONGHEADER:  "wrong packet header",
+	ERR_UNKNOWNPTYPE: "unknown packet type",
+	ERR_ERRPACKET:    "received error packet with value",
+}
+
+// Internal error codes.
 const (
 	// encoder/decoder errors
-	ERR_BINWRITE_ID, ERR_BINWRITE_MSG     = 20, "binary.Write failed:"
-	ERR_BINREAD_ID, ERR_BINREAD_MSG       = 21, "binary.READ failed:"
-	ERR_MAXSTRBUFF_ID, ERR_MAXSTRBUFF_MSG = 22, "strings can't exeed 127 bytes:"
-	ERR_STRNOTERM_ID, ERR_STRNOTERM_MSG   = 23, "string is not 0 terminated:"
-	ERR_BYTESIZE_ID, ERR_BYTESIZE_MSG     = 24, "16, 65 bytes length are allowed:"
-	ERR_PAYLOAD_ID, ERR_PAYLOAD_MSG       = 25, "unsuported payload type:"
-	ERR_BOOLTYPE_ID, ERR_BOOLTYPE_MSG     = 26, "bool can only be 0x00 or 0x01:"
-	ERR_HXBDTYPE_ID, ERR_HXBDTYPE_MSG     = 27, "unknown hexabus data type:"
-	ERR_CRCFAILED_ID, ERR_CRCFAILED_MSG   = 28, "checksum mismatch:"
+	ERR_STRBUFF   = 0xa0
+	ERR_STRNOTERM = 0xa1
+	ERR_BYTESIZE  = 0xa2
+	ERR_HXBDTYPE  = 0xa3
+	ERR_BOOLTYPE  = 0xa4
+	ERR_CRCFAILED = 0xa5
 
 	// network errors
-	ERR_WRONGHEADER_ID, ERR_WRONGHEADER_MSG   = 40, "wrong packet header:"
-	ERR_UNKNOWNPTYPE_ID, ERR_UNKNOWNPTYPE_MSG = 41, "unknown packet type:"
-	ERR_ERRPACKET_ID, ERR_ERRPACKET_MSG       = 42, "received error packet with value:"
+	ERR_WRONGHEADER  = 0xb0
+	ERR_UNKNOWNPTYPE = 0xb1
+	ERR_ERRPACKET    = 0xb2
 )

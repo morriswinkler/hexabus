@@ -1,7 +1,6 @@
 package hexabus
 
 import (
-	"fmt"
 	"net"
 	"regexp"
 	"time"
@@ -24,10 +23,10 @@ type EID struct {
 	Writable bool   // writeable
 }
 
-func QueryEids(address string, eid_qty uint16) (map[uint16]EID, error) {
+func QueryEids(address string, eid_qty uint16) ([]EID, error) {
 	eid_mask := []uint16{}
 	eid_descriptors := []uint16{}
-	eid_map := make(map[uint16]EID)
+	eid_map := []EID{}
 
 	// find all EID's in eid_qty that are 0 or can be multiplyed by 32
 	for i := uint16(0); i < eid_qty; i = i + 32 {
@@ -60,8 +59,7 @@ func QueryEids(address string, eid_qty uint16) (map[uint16]EID, error) {
 	// query all availabel EID's and build a map of struc EID
 	for eid, avlb := range eid_mask {
 		if avlb == 1 {
-			peq := EpQueryPacket{0, uint32(eid)}
-			result, err := peq.Send(address)
+			result, err := EpQueryPacket{0, uint32(eid)}.Send(address)
 			if err != nil {
 				return nil, err
 			}
@@ -70,14 +68,29 @@ func QueryEids(address string, eid_qty uint16) (map[uint16]EID, error) {
 			if err != nil {
 				return nil, err
 			}
-			eid_map[uint16(eid)] = EID{uint32(eid), pei.Dtype, pei.Data.(string), false}
+			var data interface{}
+			if pei.Dtype != DTYPE_UINT8 {
+				data = uint8(1)
+			} else {
+				data = uint32(1)
+			}
+
+			// check if endpoint is writable
+			err = WritePacket{FLAG_NONE, uint32(eid), DTYPE_UNDEFINED, data}.Send(address)
+			if err == Error(0x02) {
+				eid_map = append(eid_map, EID{uint32(eid), pei.Dtype, pei.Data.(string), false})
+			} else if err == Error(0x04) {
+				eid_map = append(eid_map, EID{uint32(eid), pei.Dtype, pei.Data.(string), true})
+			} else {
+				return nil, err
+			}
 		}
 	}
 
 	return eid_map, nil
 }
 
-func (p *QueryPacket) Send(address string) ([]byte, error) {
+func (p QueryPacket) Send(address string) ([]byte, error) {
 
 	packet := p.Encode()
 
@@ -110,7 +123,7 @@ func (p *QueryPacket) Send(address string) ([]byte, error) {
 	return readbuf[:n], nil
 }
 
-func (p *WritePacket) Send(address string) error {
+func (p WritePacket) Send(address string) error {
 
 	packet, err := p.Encode()
 	if err != nil {
@@ -147,6 +160,10 @@ func (p *WritePacket) Send(address string) error {
 	}
 
 	if n > 0 {
+		err = checkCRC(readbuf[:n])
+		if err != nil {
+			return err
+		}
 		err = checkHeader(readbuf[:n])
 		if err != nil {
 			return err
@@ -158,13 +175,13 @@ func (p *WritePacket) Send(address string) error {
 		if ptype == PTYPE_ERROR {
 			ep := ErrorPacket{}
 			ep.Decode(readbuf[:n])
-			return Error{id: ERR_ERRPACKET_ID, msg: ERR_ERRPACKET_MSG + fmt.Sprintf("%d", ep.Error)}
+			return Error(ep.Error)
 		}
 	}
 	return nil
 }
 
-func (p *EpQueryPacket) Send(address string) ([]byte, error) {
+func (p EpQueryPacket) Send(address string) ([]byte, error) {
 
 	packet := p.Encode()
 
