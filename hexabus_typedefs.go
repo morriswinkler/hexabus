@@ -1,12 +1,14 @@
 package hexabus
 
-// Constants
+// These constants are used inside Hexabus packets.
+// They describe various packet types, data types and error responses.
+// As well as the four header bytes, Hexabus bool type representation and
+// paket flags. 
 const (
 	/* Header */
 
 	// The UDP Data of a Hexabus Packet starts with the Bytes 0x48 0x58 0x30 0x43
 	// (HX0C) to identify it as a Hexabus Packet
-
 	HEADER0, HEADER1, HEADER2, HEADER3 = 0x48, 0x58, 0x30, 0x43
 
 	/* Boolean values */
@@ -111,13 +113,4 @@ const (
 
 	// A value was encountered that cannot be interpreted
 	ERR_INVALID_VALUE = 0x05
-
-	/* Networking */
-	
-	// hexabus default port
-	PORT = "61616"
-
-	// package transmit timeout
-	NET_TIMEOUT = 3
-	
 )

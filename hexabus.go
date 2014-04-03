@@ -1,3 +1,5 @@
+// Hexabus is the go implementation of the Hexabus packet format used by Hexabus devices.
+// For more info see https://github.com/mysmartgrid/hexabus.
 package hexabus
 
 // Hexabus Error Packet 

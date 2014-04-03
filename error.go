@@ -3,13 +3,16 @@ package hexabus
 
 import "fmt"
 
-
+// Error type structure. 
 type Error struct {
 	id int       // error id
 	msg string   // error message
 	err error   // additional error message
 }
 
+// Error returns an error type.
+// All Errors are passed with an ID and optional an err type from
+// other packages.
 func (e Error ) Error() string {
 	if e.err != nil {
 		return fmt.Sprintf("Error:%d %s %s ", e.id, e.msg, e.err)
@@ -18,9 +21,18 @@ func (e Error ) Error() string {
 	}
 }
 
+// Defaults used by the network communication. 
 const (
-	// Internal errors with id and error message
+	// hexabus default port
+	PORT = "61616"
 
+	// package transmit timeout
+	NET_TIMEOUT = 3
+)
+
+
+// Internal error message.
+const (
 	// encoder/decoder errors
 	ERR_BINWRITE_ID, ERR_BINWRITE_MSG = 20, "binary.Write failed:"
 	ERR_BINREAD_ID, ERR_BINREAD_MSG = 21, "binary.READ failed:"
@@ -36,5 +48,4 @@ const (
 	ERR_WRONGHEADER_ID, ERR_WRONGHEADER_MSG = 40, "wrong packet header:"
 	ERR_UNKNOWNPTYPE_ID, ERR_UNKNOWNPTYPE_MSG = 41, "unknown packet type:"
 	ERR_ERRPACKET_ID, ERR_ERRPACKET_MSG = 42, "received error packet with value:"
-
 )
