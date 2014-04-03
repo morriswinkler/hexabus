@@ -99,7 +99,7 @@ const (
 	HXB_ERR_SUCCESS = 0x00
 
 	// A request for an endpoint which does not exist on the device was received
-	HXB_ERR_PACKETUNKNOWNEID = 0x01
+	HXB_ERR_UNKNOWNEID = 0x01
 
 	// WRITE was received for a readonly endpoint
 	HXB_ERR_WRITEREADONLY = 0x02

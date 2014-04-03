@@ -20,12 +20,12 @@ func (e Error) Error() string {
 
 var error_message = map[Error]string{
 	// Hexanus packet errors
-	HXB_ERR_SUCCESS:          "hexabus packet error success",
-	HXB_ERR_PACKETUNKNOWNEID: "hexabus packet endpoint does not exist",
-	HXB_ERR_WRITEREADONLY:    "hexabus packet write on read only eid",
-	HXB_ERR_CRCFAILED:        "hexabus packet crc failed",
-	HXB_ERR_DATATYPE:         "hexabus packet data type doesn't fit endpoint",
-	HXB_ERR_INVALID_VALUE:    "hexabus packet value can not be interpreted",
+	HXB_ERR_SUCCESS:       "hexabus packet error success",
+	HXB_ERR_UNKNOWNEID:    "hexabus packet endpoint does not exist",
+	HXB_ERR_WRITEREADONLY: "hexabus packet write on read only eid",
+	HXB_ERR_CRCFAILED:     "hexabus packet crc failed",
+	HXB_ERR_DATATYPE:      "hexabus packet data type doesn't fit endpoint",
+	HXB_ERR_INVALID_VALUE: "hexabus packet value can not be interpreted",
 
 	// internal errors
 	ERR_STRBUFF:   "strings must be 127 bytes",
