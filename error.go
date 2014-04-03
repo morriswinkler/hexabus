@@ -21,16 +21,6 @@ func (e Error ) Error() string {
 	}
 }
 
-// Defaults used by the network communication. 
-const (
-	// hexabus default port
-	PORT = "61616"
-
-	// package transmit timeout
-	NET_TIMEOUT = 3
-)
-
-
 // Internal error message.
 const (
 	// encoder/decoder errors
