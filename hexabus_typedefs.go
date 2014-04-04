@@ -113,4 +113,7 @@ const (
 
 	// A value was encountered that cannot be interpreted
 	HXB_ERR_INVALID_VALUE = 0x05
+
+	// lib hexabus version
+	VERSION = "1.0.0 beta"
 )
