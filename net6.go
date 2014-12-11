@@ -23,6 +23,8 @@ type EID struct {
 	Writable bool   // writeable
 }
 
+// Switch IPv6 address, quantity Example:
+// eids, err := hexabus.QueryEids("[fafa::50:c4ff:fe04:8390]", 32)
 func QueryEids(address string, eid_qty uint16) ([]EID, error) {
 	eid_mask := []uint16{}
 	eid_descriptors := []uint16{}
