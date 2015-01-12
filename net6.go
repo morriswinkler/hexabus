@@ -160,7 +160,7 @@ func (p WritePacket) Send(address string) error {
 
 	// Register the time after writing and report
 	timeAfterWrite := time.Now()
-	fmt.Sprintf("Write took %v seconds\n",
+	fmt.Printf("Write took %v seconds\n",
 		timeAfterWrite.Sub(timeBeforeWrite).Seconds())
 
 	// Register time before reading the packet
@@ -171,7 +171,7 @@ func (p WritePacket) Send(address string) error {
 
 	// Register time after read and report
 	timeAfterRead := time.Now()
-	fmt.Sprintf("Reading took %v seconds\n",
+	fmt.Printf("Reading took %v seconds\n",
 		timeAfterRead.Sub(timeBeforeRead).Seconds())
 
 	// Check errors
@@ -195,7 +195,7 @@ func (p WritePacket) Send(address string) error {
 			return err
 		}
 
-		fmt.Sprintf("Packet type %v\n", ptype)
+		fmt.Printf("Packet type %v\n", ptype)
 
 		if ptype == PTYPE_ERROR {
 			ep := ErrorPacket{}
