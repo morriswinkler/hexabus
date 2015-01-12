@@ -1,6 +1,7 @@
 package hexabus
 
 import (
+	"fmt"
 	"net"
 	"regexp"
 	"time"
@@ -148,13 +149,32 @@ func (p WritePacket) Send(address string) error {
 		return err
 	}
 
+	// Register time before writting the packet
+	timeBeforeWrite := time.Now()
+
+	// Write the packet
 	_, err = conn.Write(packet)
 	if err != nil {
 		return err
 	}
 
+	// Register the time after writing and report
+	timeAfterWrite := time.Now()
+	fmt.Sprintf("Write took %v seconds\n",
+		timeAfterWrite.Sub(timeBeforeWrite).Seconds())
+
+	// Register time before reading the packet
+	timeBeforeRead := time.Now()
+
+	// Read the packet
 	n, err := conn.Read(readbuf)
 
+	// Register time after read and report
+	timeAfterRead := time.Now()
+	fmt.Sprintf("Reading took %v seconds\n",
+		timeAfterRead.Sub(timeBeforeRead).Seconds())
+
+	// Check errors
 	if err != nil {
 		if opErr, ok := err.(net.Error); ok && !opErr.Timeout() {
 			return err
@@ -174,6 +194,9 @@ func (p WritePacket) Send(address string) error {
 		if err != nil {
 			return err
 		}
+
+		fmt.Sprintf("Packet type %v\n", ptype)
+
 		if ptype == PTYPE_ERROR {
 			ep := ErrorPacket{}
 			ep.Decode(readbuf[:n])
