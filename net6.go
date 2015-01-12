@@ -1,7 +1,6 @@
 package hexabus
 
 import (
-	"fmt"
 	"net"
 	"regexp"
 	"time"
@@ -138,7 +137,6 @@ func (p WritePacket) Send(address string) error {
 	if !validPort.MatchString(address) {
 		address += ":" + PORT
 	}
-	readbuf := make([]byte, 152)
 	conn, err := net.DialTimeout("udp6", address, time.Duration(NET_TIMEOUT)*time.Second)
 	if err != nil {
 		return err
@@ -149,66 +147,12 @@ func (p WritePacket) Send(address string) error {
 		return err
 	}
 
-	// Register time before writting the packet
-	timeBeforeWrite := time.Now()
-
 	// Write the packet
-	var wn int
-	wn, err = conn.Write(packet)
+	_, err = conn.Write(packet)
 	if err != nil {
 		return err
 	}
 
-	// Check the wn variable
-	fmt.Printf("wn: %v\n", wn)
-
-	// Register the time after writing and report
-	timeAfterWrite := time.Now()
-	fmt.Printf("Write took %v seconds\n",
-		timeAfterWrite.Sub(timeBeforeWrite).Seconds())
-
-	// Register time before reading the packet
-	timeBeforeRead := time.Now()
-
-	// Read the packet
-	n, err := conn.Read(readbuf)
-
-	fmt.Printf("n: %v\n", n)
-
-	// Register time after read and report
-	timeAfterRead := time.Now()
-	fmt.Printf("Reading took %v seconds\n",
-		timeAfterRead.Sub(timeBeforeRead).Seconds())
-
-	// Check errors
-	if err != nil {
-		if opErr, ok := err.(net.Error); ok && !opErr.Timeout() {
-			return err
-		}
-	}
-
-	if n > 0 {
-		err = checkCRC(readbuf[:n])
-		if err != nil {
-			return err
-		}
-		err = checkHeader(readbuf[:n])
-		if err != nil {
-			return err
-		}
-		ptype, err := PacketType(readbuf[:n])
-		if err != nil {
-			return err
-		}
-
-		fmt.Printf("Packet type %v\n", ptype)
-
-		if ptype == PTYPE_ERROR {
-			ep := ErrorPacket{}
-			ep.Decode(readbuf[:n])
-			return Error(ep.Error)
-		}
-	}
 	return nil
 }
 
