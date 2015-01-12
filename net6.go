@@ -23,6 +23,8 @@ type EID struct {
 	Writable bool   // writeable
 }
 
+// Switch IPv6 address, quantity Example:
+// eids, err := hexabus.QueryEids("[fafa::50:c4ff:fe04:8390]", 32)
 func QueryEids(address string, eid_qty uint16) ([]EID, error) {
 	eid_mask := []uint16{}
 	eid_descriptors := []uint16{}
@@ -104,6 +106,7 @@ func (p QueryPacket) Send(address string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer conn.Close()
 
 	err = conn.SetReadDeadline(time.Now().Add(time.Duration(NET_TIMEOUT * time.Second)))
 	if err != nil {
@@ -135,49 +138,23 @@ func (p WritePacket) Send(address string) error {
 	if !validPort.MatchString(address) {
 		address += ":" + PORT
 	}
-	readbuf := make([]byte, 152)
 	conn, err := net.DialTimeout("udp6", address, time.Duration(NET_TIMEOUT)*time.Second)
 	if err != nil {
 		return err
 	}
+	defer conn.Close()
 
 	err = conn.SetReadDeadline(time.Now().Add(time.Duration(NET_TIMEOUT * time.Second)))
 	if err != nil {
 		return err
 	}
 
+	// Write the packet
 	_, err = conn.Write(packet)
 	if err != nil {
 		return err
 	}
 
-	n, err := conn.Read(readbuf)
-
-	if err != nil {
-		if opErr, ok := err.(net.Error); ok && !opErr.Timeout() {
-			return err
-		}
-	}
-
-	if n > 0 {
-		err = checkCRC(readbuf[:n])
-		if err != nil {
-			return err
-		}
-		err = checkHeader(readbuf[:n])
-		if err != nil {
-			return err
-		}
-		ptype, err := PacketType(readbuf[:n])
-		if err != nil {
-			return err
-		}
-		if ptype == PTYPE_ERROR {
-			ep := ErrorPacket{}
-			ep.Decode(readbuf[:n])
-			return Error(ep.Error)
-		}
-	}
 	return nil
 }
 
@@ -195,6 +172,7 @@ func (p EpQueryPacket) Send(address string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer conn.Close()
 
 	err = conn.SetReadDeadline(time.Now().Add(time.Duration(NET_TIMEOUT * time.Second)))
 	if err != nil {

@@ -124,6 +124,8 @@ func (p *QueryPacket) Decode(packet []byte) (err error) {
 // Hexabus Write Packet
 // used to set a writeable entpoint id to a certain value, there is no response for that o
 // other than an Error Packet on fail
+// example:
+// var wPack hexabus.WritePacket = hexabus.WritePacket{hexabus.FLAG_NONE, 1, hexabus.DTYPE_BOOL, false}
 type WritePacket struct {
 	// 4 bytes header
 	// 1 byte packet type
