@@ -106,6 +106,7 @@ func (p QueryPacket) Send(address string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer conn.Close()
 
 	err = conn.SetReadDeadline(time.Now().Add(time.Duration(NET_TIMEOUT * time.Second)))
 	if err != nil {
@@ -141,6 +142,7 @@ func (p WritePacket) Send(address string) error {
 	if err != nil {
 		return err
 	}
+	defer conn.Close()
 
 	err = conn.SetReadDeadline(time.Now().Add(time.Duration(NET_TIMEOUT * time.Second)))
 	if err != nil {
@@ -170,6 +172,7 @@ func (p EpQueryPacket) Send(address string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer conn.Close()
 
 	err = conn.SetReadDeadline(time.Now().Add(time.Duration(NET_TIMEOUT * time.Second)))
 	if err != nil {
