@@ -153,10 +153,14 @@ func (p WritePacket) Send(address string) error {
 	timeBeforeWrite := time.Now()
 
 	// Write the packet
-	_, err = conn.Write(packet)
+	var wn int
+	wn, err = conn.Write(packet)
 	if err != nil {
 		return err
 	}
+
+	// Check the wn variable
+	fmt.Printf("wn: %v\n", wn)
 
 	// Register the time after writing and report
 	timeAfterWrite := time.Now()
