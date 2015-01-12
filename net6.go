@@ -173,6 +173,8 @@ func (p WritePacket) Send(address string) error {
 	// Read the packet
 	n, err := conn.Read(readbuf)
 
+	fmt.Printf("n: %v\n", n)
+
 	// Register time after read and report
 	timeAfterRead := time.Now()
 	fmt.Printf("Reading took %v seconds\n",
